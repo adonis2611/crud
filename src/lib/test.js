@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import supabase from '$lib/db';
+import { AuthUser } from '@supabase/supabase-js';
 
 export const todoStore = (() => {
 	const { subscribe, update, set } = writable({
@@ -15,7 +16,7 @@ export const todoStore = (() => {
 		update,
 		set,
 
-		get: async () => {
+		get: async (allTask) => {
 			update((state) => {
 				state.isLoading = true;
 				return state;
@@ -70,6 +71,39 @@ export const todoStore = (() => {
 					.update({ isCompleted: !currentState })
 					.match({ id });
 				todoStore.get();
+
+				if (error) throw error;
+			} catch (e) {
+				alert(e.message);
+			} finally {
+				update((state) => (state = { ...state, isLoading: false }));
+			}
+		}
+	};
+})();
+
+export const authStore = (() => {
+	const { subscribe, update, set } = writable({
+		email: '',
+		isLoading: false
+	});
+
+	return {
+		subscribe,
+		update,
+		set,
+
+		signUp: async (email) => {
+			update((state) => (state = { ...state, isLoading: true }));
+			try {
+				let { error } = await supabase.auth.signUp({
+					email,
+					password: 'password'
+				});
+				update((state) => {
+					state.email = '';
+					return state;
+				});
 
 				if (error) throw error;
 			} catch (e) {
