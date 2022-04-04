@@ -9,7 +9,9 @@
 	<div class="flex flex-col items-center">
 		{#if $user}
 			<div>
-				welcome {$user.email}
+				<a href="/post">
+					welcome {$user.email}
+				</a>
 			</div>
 
 			<button class="bg-blue-200 p-2" on:click={() => authStore.signOut()}>sign out</button>

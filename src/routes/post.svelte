@@ -20,26 +20,28 @@
 	{:then}
 		{#if $postStore.allPost.length}
 			{#each $postStore.allPost as item}
-				<div class="mt-2 p-2 rounded-md border hover:bg-gray-50">
-					{item.isPublished}
-					isPublished:
-					<input
-						on:click={() => postStore.toggle(item.id, item.isPublished)}
-						bind:checked={item.isPublished}
-						type="checkbox"
-						name=""
-						id=""
-					/>
-					<div>
-						title: {item.title}
+				<a href={`/blog/${item.id}`}>
+					<div class="mt-2 p-2 rounded-md border hover:bg-gray-50">
+						{item.isPublished}
+						isPublished:
+						<input
+							on:click={() => postStore.toggle(item.id, item.isPublished)}
+							bind:checked={item.isPublished}
+							type="checkbox"
+							name=""
+							id=""
+						/>
+						<div>
+							title: {item.title}
+						</div>
+						<div>
+							content: {item.content}
+						</div>
+						<button class="bg-blue-200 px-2 rounded" on:click={() => postStore.remove(item.id)}
+							>Remove</button
+						>
 					</div>
-					<div>
-						content: {item.content}
-					</div>
-					<button class="bg-blue-200 px-2 rounded" on:click={() => postStore.remove(item.id)}
-						>Remove</button
-					>
-				</div>
+				</a>
 			{/each}
 		{:else}
 			no new post
