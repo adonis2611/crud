@@ -1,6 +1,6 @@
 <script context="module">
 	export async function load({ params }) {
-		const id = params.id;
+		const id = params.slug;
 		const { data: post } = await supabase
 			.from('post')
 			.select('title,content,id, comment(comment)')

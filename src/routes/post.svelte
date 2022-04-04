@@ -20,17 +20,18 @@
 	{:then}
 		{#if $postStore.allPost.length}
 			{#each $postStore.allPost as item}
-				<a href={`/blog/${item.id}`}>
+				<input
+					on:click={() => postStore.toggle(item.id, item.isPublished)}
+					bind:checked={item.isPublished}
+					type="checkbox"
+					name=""
+					id=""
+				/>
+				<a sveltekit:prefetch href={`/${item.id}`}>
 					<div class="mt-2 p-2 rounded-md border hover:bg-gray-50">
 						{item.isPublished}
 						isPublished:
-						<input
-							on:click={() => postStore.toggle(item.id, item.isPublished)}
-							bind:checked={item.isPublished}
-							type="checkbox"
-							name=""
-							id=""
-						/>
+
 						<div>
 							title: {item.title}
 						</div>
