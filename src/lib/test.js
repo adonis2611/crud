@@ -1,7 +1,65 @@
-import { writable } from 'svelte/store';
+import { writable, readable } from 'svelte/store';
 import supabase from '$lib/db';
-import { AuthUser } from '@supabase/supabase-js';
+import { goto } from '$app/navigation';
 
+export const user = readable(null, (set) => {
+	set(supabase.auth.user());
+	const unsubscribe = supabase.auth.onAuthStateChange((_, session) => {
+		session ? set(session.user) : set(null);
+	});
+	return () => {
+		unsubscribe.data.unsubscribe();
+	};
+});
+
+export const authStore = (() => {
+	const { subscribe, update, set } = writable({
+		email: '',
+		password: 'password'
+	});
+
+	return {
+		subscribe,
+		update,
+		set,
+
+		signIn: async () => {
+			try {
+				const { error } = await supabase.auth.signIn({
+					email: '1@gmail.com',
+					password: 'password'
+				});
+
+				if (error) throw error;
+			} catch (e) {
+				console.log(e.message);
+			} finally {
+				goto('/post');
+			}
+		},
+		signUp: async (email) => {
+			try {
+				const { error } = await supabase.auth.signUp({
+					email,
+					password: 'password'
+				});
+
+				if (error) throw error;
+			} catch (e) {
+				console.log(e.message);
+			}
+		},
+		signOut: async () => {
+			try {
+				const { error } = await supabase.auth.signOut();
+				goto('/');
+				if (error) throw error;
+			} catch (e) {
+				console.log(2);
+			}
+		}
+	};
+})();
 export const todoStore = (() => {
 	const { subscribe, update, set } = writable({
 		step: 0,
@@ -16,76 +74,43 @@ export const todoStore = (() => {
 		update,
 		set,
 
-		get: async (allTask) => {
-			update((state) => {
-				state.isLoading = true;
-				return state;
-			});
+		get: async () => {
 			try {
-				let { data, error } = await supabase.from('todos').select('*');
+				const { data, error } = await supabase.from('task').select('*');
 
 				update((state) => {
 					state.allTask = data;
 					return state;
 				});
 
-				// update((state) => (state = { ...state, allTask: data })); //this is another way of writing it
 				if (error) throw error;
 			} catch (e) {
 				console.log(e.message);
 			} finally {
-				update((state) => (state = { ...state, isLoading: false }));
+				console.log('e.message');
 			}
 		},
-		add: async (task, isCompleted) => {
-			update((state) => (state = { ...state, step: 2, isLoading: true }));
+
+		add: async (task, user_id) => {
 			try {
-				const { error } = await supabase.from('todos').insert([{ task, isCompleted }]);
-				todoStore.get();
-				update((state) => (state = { ...state, task: '' }));
-				if (error) throw error;
-			} catch (e) {
-				alert(e.message);
-			} finally {
-				update((state) => (state = { ...state, isLoading: false }));
-			}
-		},
-		delete: async (id) => {
-			update((state) => (state = { ...state, step: 2, isLoading: true }));
-			try {
-				const { error } = await supabase.from('todos').delete().match({ id });
-				todoStore.get();
+				const { error } = await supabase.from('task').insert([{ task, user_id }]);
 
 				if (error) throw error;
 			} catch (e) {
-				alert(e.message);
+				console.log(e.message);
 			} finally {
-				update((state) => (state = { ...state, isLoading: false }));
-			}
-		},
-		toggle: async (id, currentState) => {
-			update((state) => (state = { ...state, step: 2, isLoading: true }));
-			try {
-				const { error } = await supabase
-					.from('todos')
-					.update({ isCompleted: !currentState })
-					.match({ id });
-				todoStore.get();
-
-				if (error) throw error;
-			} catch (e) {
-				alert(e.message);
-			} finally {
-				update((state) => (state = { ...state, isLoading: false }));
+				console.log('e.message');
 			}
 		}
 	};
 })();
-
-export const authStore = (() => {
+export const postStore = (() => {
 	const { subscribe, update, set } = writable({
-		email: '',
-		isLoading: false
+		title: '',
+		content: '',
+		allPost: [],
+		isLoading: false,
+		isPublished: false
 	});
 
 	return {
@@ -93,23 +118,57 @@ export const authStore = (() => {
 		update,
 		set,
 
-		signUp: async (email) => {
-			update((state) => (state = { ...state, isLoading: true }));
+		get: async () => {
 			try {
-				let { error } = await supabase.auth.signUp({
-					email,
-					password: 'password'
-				});
+				const { data, error } = await supabase.from('post').select('*');
+
 				update((state) => {
-					state.email = '';
+					state.allPost = data;
 					return state;
 				});
 
 				if (error) throw error;
 			} catch (e) {
+				console.log(e.message);
+			} finally {
+				console.log('e.message');
+			}
+		},
+
+		add: async (title, content, user_id) => {
+			try {
+				const { error } = await supabase.from('post').insert([{ title, content, user_id }]);
+
+				if (error) throw error;
+			} catch (e) {
+				console.log(e.message);
+			} finally {
+				console.log('e.message');
+			}
+		},
+		remove: async (id) => {
+			try {
+				const { error } = await supabase.from('post').delete().match({ id });
+
+				if (error) throw error;
+			} catch (e) {
+				console.log(e.message);
+			} finally {
+				console.log('e.message');
+			}
+		},
+		toggle: async (id, currentState) => {
+			try {
+				const { error } = await supabase
+					.from('post')
+					.update({ isPublished: !currentState })
+					.match({ id });
+
+				if (error) throw error;
+			} catch (e) {
 				alert(e.message);
 			} finally {
-				update((state) => (state = { ...state, isLoading: false }));
+				console.log('e.message');
 			}
 		}
 	};
