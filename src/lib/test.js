@@ -1,4 +1,4 @@
-import { writable, readable } from 'svelte/store';
+import { writable, readable, get } from 'svelte/store';
 import supabase from '$lib/db';
 import { goto } from '$app/navigation';
 
@@ -23,10 +23,10 @@ export const authStore = (() => {
 		update,
 		set,
 
-		signIn: async () => {
+		signIn: async (email) => {
 			try {
 				const { error } = await supabase.auth.signIn({
-					email: '1@gmail.com',
+					email,
 					password: 'password'
 				});
 
@@ -110,7 +110,8 @@ export const postStore = (() => {
 		content: '',
 		allPost: [],
 		isLoading: false,
-		isPublished: false
+		isPublished: false,
+		comment: ''
 	});
 
 	return {
@@ -144,6 +145,7 @@ export const postStore = (() => {
 				console.log(e.message);
 			} finally {
 				console.log('e.message');
+				postStore.get();
 			}
 		},
 		remove: async (id) => {
@@ -155,6 +157,7 @@ export const postStore = (() => {
 				console.log(e.message);
 			} finally {
 				console.log('e.message');
+				postStore.get();
 			}
 		},
 		toggle: async (id, currentState) => {
@@ -169,6 +172,18 @@ export const postStore = (() => {
 				alert(e.message);
 			} finally {
 				console.log('e.message');
+				postStore.get();
+			}
+		},
+		addComment: async (comment, post_id) => {
+			try {
+				const { error } = await supabase.from('comment').insert([{ comment, post_id }]);
+
+				if (error) throw error;
+			} catch (e) {
+				console.log(e.message);
+			} finally {
+				console.log('done');
 			}
 		}
 	};

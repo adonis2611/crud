@@ -37,11 +37,11 @@
 						<div>
 							content: {item.content}
 						</div>
-						<button class="bg-blue-200 px-2 rounded" on:click={() => postStore.remove(item.id)}
-							>Remove</button
-						>
 					</div>
 				</a>
+				<button class="bg-blue-200 px-2 rounded" on:click={() => postStore.remove(item.id)}
+					>Remove</button
+				>
 			{/each}
 		{:else}
 			no new post

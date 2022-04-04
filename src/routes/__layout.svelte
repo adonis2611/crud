@@ -26,7 +26,7 @@
 				<button
 					class="bg-blue-200 px-4 py-2 rounded-lg mt-2"
 					rel="external"
-					on:click={() => authStore.signIn()}>sign in</button
+					on:click={() => authStore.signIn($authStore.email)}>sign in</button
 				>
 			</div>
 		{/if}
